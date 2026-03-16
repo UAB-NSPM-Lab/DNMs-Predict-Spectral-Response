@@ -1,9 +1,10 @@
 %Flattening Bode plots and selecting dominant resonant frequencies
 
 clearvars
-cd('/data/project/NSPMlab/hbriny99/UAB_CCEPdata/CCSR_Resonance_Comparison')
-load("PercentFreqMatchAllRand.mat")
-pt_list = string(fieldnames(PercentFreqMatchAllRand));
+cd /data/project/NSPMlab/hbriny99/UAB_CCEPdata/CCSR_Resonance_Comparison
+load("CCEPs.mat");
+cd('/data/project/NSPMlab/hbriny99/UAB_CCEPdata/Output');
+pt_list = string(fieldnames(CCEPs));
 for j = 1:length(pt_list)
     pt = pt_list(j);
     cd(append('/data/project/NSPMlab/hbriny99/UAB_CCEPdata/Output/',pt));
