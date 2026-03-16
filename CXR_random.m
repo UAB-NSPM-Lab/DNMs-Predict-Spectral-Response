@@ -47,14 +47,10 @@ for i = 1:length(pt_list)
                     N2layer(j,K) = nan;
                     N2layer(j,K+1) = nan;
                     N2layer(j,K+2) = nan;
-                    RandFreqMatches.(pt).Rand{j,k} = "NaN";
-                    Randlayer(j,K) = nan;
-                    Randlayer(j,K+1) = nan;
-                    Randlayer(j,K+2) = nan;
-                    RandFreqMatches.(pt).Null{j,k} = "NaN";
-                    Nulllayer(j,K) = nan;
-                    Nulllayer(j,K+1) = nan;
-                    Nulllayer(j,K+2) = nan;
+                    RandFreqMatches.(pt).Baseline{j,k} = "NaN";
+                    Baselinelayer(j,K) = nan;
+                    Baselinelayer(j,K+1) = nan;
+                    Baselinelayer(j,K+2) = nan;
                     continue;
                 end
                 if isnan(ActualDomFreqs.Avg{j,k})
@@ -70,23 +66,22 @@ for i = 1:length(pt_list)
                     N2layer(j,K) = nan;
                     N2layer(j,K+1) = nan;
                     N2layer(j,K+2) = nan;
-                    RandFreqMatches.(pt).Null{j,k} = "NaN";
-                    Nulllayer(j,K) = nan;
-                    Nulllayer(j,K+1) = nan;
-                    Nulllayer(j,K+2) = nan;
+                    RandFreqMatches.(pt).Baseline{j,k} = "NaN";
+                    Baselinelayer(j,K) = nan;
+                    Baselinelayer(j,K+1) = nan;
+                    Baselinelayer(j,K+2) = nan;
                     continue;
                 end
                 a = a+1;
                 avg_freqs = round(ActualDomFreqs.Avg{j,k});%in Hz
                 n1_freqs = round(ActualDomFreqs.N1{j,k});
                 n2_freqs = round(ActualDomFreqs.N2{j,k});
-                rand_freqs = round(ActualDomFreqs.Rand{j,k});
-                null_freqs = round(ActualDomFreqs.Null{j,k});
+                baseline_freqs = round(ActualDomFreqs.Baseline{j,k});
     
                 a_length.(pt)(a) = length(avg_freqs);
                 n1_length.(pt)(a) = length(n1_freqs);
                 n2_length.(pt)(a) = length(n2_freqs);
-                n_length.(pt)(a) = length(null_freqs);
+                n_length.(pt)(a) = length(baseline_freqs);
                 
                 I_avg = intersect(avg_freqs,bode_freqs);
                 if ~isempty(I_avg)
@@ -157,51 +152,28 @@ for i = 1:length(pt_list)
                 end
                 clearvars I_n2 n2_freqs
     
-                I_rand = intersect(rand_freqs,bode_freqs);
-                if ~isempty(I_rand)
-                    RandFreqMatches.(pt).Rand{j,k} = I_rand;
-                    Randlayer(j,K) = I_rand(1);
-                    if length(I_rand)>1
-                        Randlayer(j,K+1) = I_rand(2);
+                I_baseline = intersect(baseline_freqs,bode_freqs);
+                if ~isempty(I_baseline)
+                    RandFreqMatches.(pt).Baseline{j,k} = I_baseline;
+                    Baselinelayer(j,K) = I_baseline(1);
+                    if length(I_baseline)>1
+                        Baselinelayer(j,K+1) = I_baseline(2);
                     else
-                        Randlayer(j,K+1) = nan;
+                        Baselinelayer(j,K+1) = nan;
                     end
-                    if length(I_rand)>2
-                        Randlayer(j,K+2)=I_rand(3);
+                    if length(I_baseline)>2
+                        Baselinelayer(j,K+2)=I_baseline(3);
                     else
-                        Randlayer(j,K+2) = nan;
-                    end
-                else
-                    RandFreqMatches.(pt).Rand{j,k} = "NaN";
-                    Randlayer(j,K) = nan;
-                    Randlayer(j,K+1) = nan;
-                    Randlayer(j,K+2) = nan;
-                    M_rand(j,k) = 0.5;
-                end
-                clearvars I_rand rand_freqs
-    
-                I_null = intersect(null_freqs,bode_freqs);
-                if ~isempty(I_null)
-                    RandFreqMatches.(pt).Null{j,k} = I_null;
-                    Nulllayer(j,K) = I_null(1);
-                    if length(I_null)>1
-                        Nulllayer(j,K+1) = I_null(2);
-                    else
-                        Nulllayer(j,K+1) = nan;
-                    end
-                    if length(I_null)>2
-                        Nulllayer(j,K+2)=I_null(3);
-                    else
-                        Nulllayer(j,K+2) = nan;
+                        Baselinelayer(j,K+2) = nan;
                     end
                 else
-                    RandFreqMatches.(pt).Null{j,k} = "NaN";
-                    Nulllayer(j,K) = nan;
-                    Nulllayer(j,K+1) = nan;
-                    Nulllayer(j,K+2) = nan;
-                    M_null(j,k) = 0.5;
+                    RandFreqMatches.(pt).Baseline{j,k} = "NaN";
+                    Baselinelayer(j,K) = nan;
+                    Baselinelayer(j,K+1) = nan;
+                    Baselinelayer(j,K+2) = nan;
+                    M_baseline(j,k) = 0.5;
                 end
-                clearvars I_null null_freqs
+                clearvars I_baseline baseline_freqs
             end
         end
         Match_avg = find(M_avg==0);
@@ -213,15 +185,12 @@ for i = 1:length(pt_list)
         Match_n2 = find(M_n2==0);
         NonMatch_n2 = find(M_n2==0.5);
         CXRrandom.(pt).n2(h) = length(Match_n2)/(length(Match_n2)+length(NonMatch_n2));
-        Match_rand = find(M_rand==0);
-        NonMatch_rand = find(M_rand==0.5);
-        CXRrandom.(pt).rand(h) = length(Match_rand)/(length(Match_rand)+length(NonMatch_rand));
-        Match_null = find(M_null==0);
-        NonMatch_null = find(M_null==0.5);
-        CXRrandom.(pt).null(h) = length(Match_null)/(length(Match_null)+length(NonMatch_null));
-        clearvars bode_freqs Match_null Match_avg Match_n2 Match_rand Match_n1 NonMatch_null NonMatch_rand NonMatch_n2 NonMatch_n1 NonMatch_avg M_null M_rand M_n2 M_n1 M_avg
+        Match_baseline = find(M_baseline==0);
+        NonMatch_baseline = find(M_baseline==0.5);
+        CXRrandom.(pt).baseline(h) = length(Match_baseline)/(length(Match_baseline)+length(NonMatch_baseline));
+        clearvars bode_freqs Match_baseline Match_avg Match_n2 Match_rand Match_n1 NonMatch_baseline NonMatch_rand NonMatch_n2 NonMatch_n1 NonMatch_avg M_baseline M_rand M_n2 M_n1 M_avg
     end
-    clearvars -except NewFM i pt_list CustomColormap MatchFraction pt
+    clearvars -except RandFreqMatches i pt_list CustomColormap CXRrandom pt
     save("CXRrandom.mat","CXRrandom",'-v7.3');
     save("RandFreqMatches.mat","RandFreqMatches",'-v7.3');
     disp(append("Done with ",(pt)));

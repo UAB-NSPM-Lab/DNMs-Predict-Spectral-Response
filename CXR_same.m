@@ -42,14 +42,10 @@ for i = 1:length(pt_list)
                 N2layer(j,K) = nan;
                 N2layer(j,K+1) = nan;
                 N2layer(j,K+2) = nan;
-                FreqMatches.(pt).Rand{j,k} = "NaN";
-                Randlayer(j,K) = nan;
-                Randlayer(j,K+1) = nan;
-                Randlayer(j,K+2) = nan;
-                FreqMatches.(pt).Null{j,k} = "NaN";
-                Nulllayer(j,K) = nan;
-                Nulllayer(j,K+1) = nan;
-                Nulllayer(j,K+2) = nan;
+                FreqMatches.(pt).Baseline{j,k} = "NaN";
+                Baselinelayer(j,K) = nan;
+                Baselinelayer(j,K+1) = nan;
+                Baselinelayer(j,K+2) = nan;
                 continue;
             end
             bode_freqs = round(AllPeaks_Bode.(S).(R).freq_Hz);%in Hz
@@ -66,28 +62,22 @@ for i = 1:length(pt_list)
                 N2layer(j,K) = nan;
                 N2layer(j,K+1) = nan;
                 N2layer(j,K+2) = nan;
-                FreqMatches.(pt).Rand{j,k} = "NaN";
-                Randlayer(j,K) = nan;
-                Randlayer(j,K+1) = nan;
-                Randlayer(j,K+2) = nan;
-                FreqMatches.(pt).Null{j,k} = "NaN";
-                Nulllayer(j,K) = nan;
-                Nulllayer(j,K+1) = nan;
-                Nulllayer(j,K+2) = nan;
+                FreqMatches.(pt).Baseline{j,k} = "NaN";
+                Baselinelayer(j,K) = nan;
+                Baselinelayer(j,K+1) = nan;
+                Baselinelayer(j,K+2) = nan;
                 continue;
             end
             a = a+1;
             avg_freqs = round(ActualDomFreqs.Avg{j,k});%in Hz
             n1_freqs = round(ActualDomFreqs.N1{j,k});
             n2_freqs = round(ActualDomFreqs.N2{j,k});
-            rand_freqs = round(ActualDomFreqs.Rand{j,k});
-            null_freqs = round(ActualDomFreqs.Null{j,k});
+            baseline_freqs = round(ActualDomFreqs.Baseline{j,k});
 
             a_length.(pt)(a) = length(avg_freqs);
             n1_length.(pt)(a) = length(n1_freqs);
             n2_length.(pt)(a) = length(n2_freqs);
-            r_length.(pt)(a) = length(rand_freqs);
-            n_length.(pt)(a) = length(null_freqs);
+            b_length.(pt)(a) = length(baseline_freqs);
             
             I_avg = intersect(avg_freqs,bode_freqs);
             if ~isempty(I_avg)
@@ -158,51 +148,28 @@ for i = 1:length(pt_list)
             end
             clearvars I_n2 n2_freqs
 
-            I_rand = intersect(rand_freqs,bode_freqs);
-            if ~isempty(I_rand)
-                FreqMatches.(pt).Rand{j,k} = I_rand;
-                Randlayer(j,K) = I_rand(1);
-                if length(I_rand)>1
-                    Randlayer(j,K+1) = I_rand(2);
+            I_baseline = intersect(baseline_freqs,bode_freqs);
+            if ~isempty(I_baseline)
+                FreqMatches.(pt).Null{j,k} = I_baseline;
+                Baselinelayer(j,K) = I_baseline(1);
+                if length(I_baseline)>1
+                    Baselinelayer(j,K+1) = I_baseline(2);
                 else
-                    Randlayer(j,K+1) = nan;
+                    Baselinelayer(j,K+1) = nan;
                 end
-                if length(I_rand)>2
-                    Randlayer(j,K+2)=I_rand(3);
+                if length(I_baseline)>2
+                    Baselinelayer(j,K+2)=I_baseline(3);
                 else
-                    Randlayer(j,K+2) = nan;
-                end
-            else
-                FreqMatches.(pt).Rand{j,k} = "NaN";
-                Randlayer(j,K) = nan;
-                Randlayer(j,K+1) = nan;
-                Randlayer(j,K+2) = nan;
-                M_rand(j,k) = 0.5;
-            end
-            clearvars I_rand rand_freqs
-
-            I_null = intersect(null_freqs,bode_freqs);
-            if ~isempty(I_null)
-                FreqMatches.(pt).Null{j,k} = I_null;
-                Nulllayer(j,K) = I_null(1);
-                if length(I_null)>1
-                    Nulllayer(j,K+1) = I_null(2);
-                else
-                    Nulllayer(j,K+1) = nan;
-                end
-                if length(I_null)>2
-                    Nulllayer(j,K+2)=I_null(3);
-                else
-                    Nulllayer(j,K+2) = nan;
+                    Baselinelayer(j,K+2) = nan;
                 end
             else
-                FreqMatches.(pt).Null{j,k} = "NaN";
-                Nulllayer(j,K) = nan;
-                Nulllayer(j,K+1) = nan;
-                Nulllayer(j,K+2) = nan;
-                M_null(j,k) = 0.5;
+                FreqMatches.(pt).Baseline{j,k} = "NaN";
+                Baselinelayer(j,K) = nan;
+                Baselinelayer(j,K+1) = nan;
+                Baselinelayer(j,K+2) = nan;
+                M_baseline(j,k) = 0.5;
             end
-            clearvars I_null null_freqs bode_freqs
+            clearvars I_baseline baseline_freqs bode_freqs
         end
     end
     Match_avg = find(M_avg==0);
@@ -217,19 +184,15 @@ for i = 1:length(pt_list)
     NonMatch_n2 = find(M_n2==0.5);
     CXR.(pt).n2 = length(Match_n2)/(length(Match_n2)+length(NonMatch_n2));
     CXR.All.n2(i) = length(Match_n2)/(length(Match_n2)+length(NonMatch_n2));
-    Match_rand = find(M_rand==0);
-    NonMatch_rand = find(M_rand==0.5);
-    CXR.(pt).rand = length(Match_rand)/(length(Match_rand)+length(NonMatch_rand));
-    CXR.All.rand(i) = length(Match_rand)/(length(Match_rand)+length(NonMatch_rand));
-    Match_null = find(M_null==0);
-    NonMatch_null = find(M_null==0.5);
-    CXR.(pt).null = length(Match_null)/(length(Match_null)+length(NonMatch_null));
-    CXR.All.null(i) = length(Match_null)/(length(Match_null)+length(NonMatch_null));
-    clearvars -except FreqMatches i pt_list CustomColormap CXR a_length n1_length n2_length r_length n_length
+    Match_baseline = find(M_baseline==0);
+    NonMatch_baseline = find(M_baseline==0.5);
+    CXR.(pt).baseline = length(Match_baseline)/(length(Match_baseline)+length(NonMatch_baseline));
+    CXR.All.baseline(i) = length(Match_baseline)/(length(Match_baseline)+length(NonMatch_baseline));
+    clearvars -except FreqMatches i pt_list CustomColormap CXR a_length n1_length n2_length b_length n_length
 end
-% cd /data/project/NSPMlab/hbriny99/UAB_CCEPdata/CCSR_Resonance_Comparison
-% save("CXR","CXR",'-v7.3');
-% save("FreqMatches","FreqMatches",'-v7.3');
+cd /data/project/NSPMlab/hbriny99/UAB_CCEPdata/CCSR_Resonance_Comparison
+save("CXR","CXR",'-v7.3');
+save("FreqMatches","FreqMatches",'-v7.3');
 
 %% CXRsame figure 
 cd('/data/project/NSPMlab/hbriny99/UAB_CCEPdata/CCSR_Resonance_Comparison')
@@ -243,7 +206,7 @@ x1 = ones(1,length(pt_list));
 x2 = x1*2;
 x3 = x1*3;
 x4 = x1*4;
-y1 = CXR.All.null*100;
+y1 = CXR.All.baseline*100;
 y2 = CXR.All.n1*100; 
 y3 = CXR.All.n2*100; 
 y4 = CXR.All.avg*100;
@@ -266,7 +229,7 @@ TrueMF = CXR; %CXRsame
 clearvars MatchFraction
 load("SplitCorr.mat")
 pt_list = string(fieldnames(SplitCorr));
-pt_list_ignore = [2];
+pt_list_ignore = 2;
 pt_list(pt_list_ignore) = [];
 
 figure; 
