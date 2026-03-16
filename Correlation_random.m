@@ -45,6 +45,7 @@ for patients = 1:length(Dir)
     load("CorrAvg.mat");
     load("CorrN1.mat");
     load("CorrN2.mat");
+    load("CorrBaseline.mat");
     RandCorrN1 = nan(size(CC_array,1),size(CC_array,2),100);
     RandCorrN2 = nan(size(CC_array,1),size(CC_array,2),100);
     RandCorrAvg = nan(size(CC_array,1),size(CC_array,2),100);
