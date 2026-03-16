@@ -1,0 +1,77 @@
+function [dirname] = UAB_edfread(pt,ccep_data_path,out_path)
+
+edfpath = append(ccep_data_path,'/EDFs');
+addpath(genpath(edfpath));
+cd(edfpath);
+
+LS = string(ls);
+LS = strsplit(LS,' ');
+f_idx = find(contains(LS,pt));
+filename = LS(f_idx);
+filename = erase(filename,char(10));
+
+info = edfinfo(filename);
+signals = info.SignalLabels;
+for i = 1:length(signals)
+    [~,annotations] = edfread(filename, "SelectedSignals",signals(i));
+    if isempty(annotations) == 0
+        break;
+    end
+end
+outpath = append(out_path,'/',pt);
+mkdir(outpath);
+cd(outpath);
+save('info',"info",'-v7.3');
+cd(edfpath);
+[data, annotations]= edfread(filename,"SelectedSignals",signals(1)); 
+for i = 1:size(annotations,1)
+    Starts(i) = contains(annotations.Annotations(i),"Closed relay"); 
+end
+z = 0;
+for j = 1:length(Starts)
+    if Starts(j) == 1
+        z = z+1;
+        DataTimes.starttime(z) = annotations.Onset(j);
+    end
+end
+tic;
+z = 0;
+for j = 1:length(DataTimes.starttime)
+    ST = seconds(DataTimes.starttime(j));
+    for i = 1:size(data)
+        RT = seconds(data.("Record Time")(i));
+        if gt(RT,ST) == 0
+            continue;
+        elseif gt(RT,ST) == 1
+            z = z+1;
+            Sidx(z) = i;
+            break
+        end
+    end
+end
+toc
+dur = seconds(info.DataRecordDuration);
+prestim = round(0.5/dur); %Getting number of data packets to import 500 msbefore the stimulus  
+poststim = round(31/dur); %30sec after the stimulus; should be train duration 
+for i = 1:length(Sidx)
+    datagrab.start(i) = Sidx(i)-prestim;
+    datagrab.end(i) = Sidx(i)+poststim;
+end
+Annidx = find(Starts == 1);
+for i = 1:length(datagrab.start)
+    start = datagrab.start(i);
+    if i == length(datagrab.start)
+        finish = info.NumDataRecords;
+    else
+        finish = datagrab.start(i+1);
+    end
+    stim_pair = char(annotations.Annotations(Annidx(i)));
+    stim_pair = convertCharsToStrings(stim_pair);
+    stim_pair = erase(stim_pair,'Closed relay to ');
+    [data, ~] = edfread(filename, 'SelectedDataRecords',start:finish);
+    dirname = append(string(pt),' CCEP');%info.Filename;
+    pathname = fullfile(ccep_data_path,'CCEPs',dirname,stim_pair);
+    mkdir(pathname);
+    cd(pathname);
+    save('data.mat',"data");
+end

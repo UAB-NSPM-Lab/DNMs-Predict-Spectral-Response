@@ -1,0 +1,81 @@
+%Code to display Sigma/Bode plots of interest for Seizure Stim Planning
+pt = "P0146";
+
+clinical_electrode_list = ["RA1_RA2" "RAH1_RAH2" "LA1_LA2" "LTP1_LTP2" "LTP3_LTP4"]; %Update for each pt
+
+%% Load Stuff
+cd(append('/data/project/NSPMlab/hbriny99/UAB_Output/',(pt)));
+load("ArtifactualChannels.mat");
+load("base.mat");
+
+%% Display Sigma Plots
+cd(append('/data/project/NSPMlab/hbriny99/UAB_Output/',(pt),'/TFMsBode_figures/ModelReconstructions'));
+load("CC_array.mat");
+cc_avg = nanmean(CC_array,1);
+remove_idx = find(isnan(cc_avg));
+CC_array(:,remove_idx) = [];
+load("StimNames.mat");
+nanmeanCC = nanmean(CC_array,2);
+nmCC2 = nanmeanCC;
+topstims = string(nan(10,1));
+StimNames2 = StimNames;
+for topten = 1:10
+    topidx = find(nanmeanCC == max(nanmeanCC));
+    topidx2 = find(nmCC2 == max(nanmeanCC));
+    topstims(topten) = string(StimNames(topidx));%List of channels to stim for seizures
+    StimNames(topidx) = [];
+    nanmeanCC(topidx) = [];
+    idx(topten) = topidx2;
+end 
+electrodes = [topstims' clinical_electrode_list];
+cd(append('/data/project/NSPMlab/hbriny99/UAB_Output/',(pt),'/TFMsBode_figures/Sigma'));
+for i = 1:length(electrodes)
+    E = electrodes(i);
+    openfig(append((E),"_sigma_SEEG.fig"));
+end
+
+%% Display Bode plots
+for j = 1:length(electrodes)
+    S = electrodes(j); %electrode being stimulated
+    if ~contains(S,fieldnames(Arts))
+        continue
+    else
+        arts = Arts.(S);
+        arts_idx = find(arts == 1); 
+        cd(append('/data/project/NSPMlab/hbriny99/UAB_Output/',pt,'/TFMsBode_figures/Bode')); 
+        load(append((S),'_Bode_Matrices.mat'));
+    %     for jj = 1:length(arts_idx)
+    %         bode_1 = bode_matrix;
+    %         bode_1(arts_idx(jj):end)=[];%first part
+    %         freq_1 = freq_matrix;
+    %         freq_1(arts_idx(jj):end) = [];
+    %         bode_1(end+1) = {zeros(1,100)};%insert placeholder cell
+    %         freq_1(end+1) = {zeros(1,100)};
+    %         bode_2 = bode_matrix(arts_idx(jj):end);%second bit
+    %         freq_2 = freq_matrix(arts_idx(jj):end);
+    %         bode_matrix = [bode_1 bode_2];
+    %         freq_matrix = [freq_1 freq_2];
+    %     end%repeat until length of bode_matrix is same length as response channels
+        available_response_channels = base.bipolarresplabels;
+        available_response_channels(arts_idx) = [];
+        for k = 1:length(clinical_electrode_list)
+            soz_targets(k,:) = strsplit(clinical_electrode_list(k),"_");
+        end
+        soz_targets = unique(reshape(soz_targets,[],1));
+        target_idx = find(contains(available_response_channels,soz_targets));
+        figure;
+        hold on;
+        for l = 1:length(target_idx)
+            plot(freq_matrix{target_idx(l)},log(bode_matrix{target_idx(l)}));
+        end
+        xlim([0 100]);
+        xlabel("Frequency (Hz)")
+        xline(5,'-',{'5'})
+        xline(10,"k","10")
+        xline(15,"k","15")
+        xline(20,"k","20")
+        xline(50,"k","50")
+        title(append((pt),' ',(S),' - SOZ targets'),"Interpreter","none");
+        clearvars -except j electrodes Arts clinical_electrode_list base pt topstims
+    end
+end  

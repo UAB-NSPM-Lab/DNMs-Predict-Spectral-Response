@@ -1,0 +1,25 @@
+function NYU_process(pt)
+
+%paths
+code_path = '/data/project/NSPMlab/hbriny99/NYU_Processing_Codes';
+ccep_data_path = '/data/project/NSPMlab/hbriny99/NYU_CCEPdata';
+out_path = '/data/project/NSPMlab/hbriny99/NYU_Output';
+
+%read .edf
+dirname = "NYU_edfread(pt,ccep_data_path,out_path);
+
+%preprocess
+out = NYU_preprocess(dirname,ccep_data_path,out_path);
+
+%remove artifacts
+[out, base, Arts] = NYU_removeartifacts(out);
+
+%filter
+[filtered_data] = NYU_filter(out,Arts,base,pt,out_path);
+
+%calculate average waveforms
+[avg_waveforms] = NYU_avg_waveforms(pt,filtered_data,out_path);
+NYU_plot_avg_waveforms(avg_waveforms)
+
+%build models and Bode plots
+NYU_Bode(pt, avg_waveforms, code_path,out_path);
