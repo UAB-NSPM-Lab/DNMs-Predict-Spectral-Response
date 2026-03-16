@@ -47,7 +47,7 @@ for patients = 1:length(Dir)
     CorrN1 = nan(size(CC_array,1),size(CC_array,2));
     CorrN2 = nan(size(CC_array,1),size(CC_array,2));
     CorrAvg = nan(size(CC_array,1),size(CC_array,2));
-    CorrNrand = nan(size(CC_array,1),size(CC_array,2));
+    CorrBaseline = nan(size(CC_array,1),size(CC_array,2));
     %% Pick FM curves
     stims = string(fieldnames(Arts));
     nancount = 0;
@@ -76,6 +76,9 @@ for patients = 1:length(Dir)
         N2_window_start = ceil(0.55*fs);
         N2_window_end = ceil(fs);
         N2_length = N2_window_end - N2_window_start;
+        Baseline_window_start = ceil(0.050*fs);%defining prestim baseline window
+        Baseline_window_end = ceil(0.45*fs);
+        Baseline_length = Baseline_window_end - Baseline_window_start;
         %% Get S-R FM curves 
         resps = short.resplabels;
         resps(remove_idx) = [];
@@ -86,7 +89,7 @@ for patients = 1:length(Dir)
                 CorrN1(j,k) = nan;
                 CorrN2(j,k) = nan;
                 CorrAvg(j,k) = nan;
-                CorrNrand(j,k) = nan;
+                CorrBaseline(j,k) = nan;
                 nancount = nancount+1;
                 continue
             end
@@ -122,35 +125,34 @@ for patients = 1:length(Dir)
                 N2_vec = zeros(60,1);
             end
             N_vec_avg = mean(ccsr(:,N1_window_start:N2_window_end),2);
-            rand_n = randi([N1_window_start N2_window_end]);
-            N_vec_rand = ccsr(:,rand_n);
+            N_vec_baseline = mean(ccsr(:,Baseline_window_start:Baseline_window_end),2);
             CCSR_curves.(S).(R).N1 = N1_vec;
             CCSR_curves.(S).(R).N2 = N2_vec;
             CCSR_curves.(S).(R).Avg = N_vec_avg;
-            CCSR_curves.(S).(R).Rand = N_vec_rand;
+            CCSR_curves.(S).(R).Baseline = N_vec_baseline;
             %Correlated Curves?
             cor1 = corrcoef(N1_vec(freqlim),bode_interp(freqlim)); cor1 = cor1(1,2); 
             cor2 = corrcoef(N2_vec(freqlim),bode_interp(freqlim)); cor2 = cor2(1,2);
             coravg = corrcoef(N_vec_avg(freqlim),bode_interp(freqlim)); coravg = coravg(1,2); 
-            corrand = corrcoef(N_vec_rand(freqlim),bode_interp(freqlim)); corrand = corrand(1,2);
+            corbaseline = corrcoef(N_vec_baseline(freqlim),bode_interp(freqlim)); corbaseline = corbaseline(1,2); 
             CorrN1(j,k) = cor1;
             CorrN2(j,k) = cor2;
             CorrAvg(j,k) = coravg;
-            CorrNrand(j,k) = corrand;
+            CorrBaseline(j,k) = corbaseline;
         end
     end
     figure; 
     subplot(2,2,1); heatmap(CorrN1); clim([-1 1]); colorbar; title("N1-Bode"); grid off
     subplot(2,2,2); heatmap(CorrN2); clim([-1 1]); colorbar; title("N2-Bode");grid off
     subplot(2,2,3); heatmap(CorrAvg); clim([-1 1]); colorbar; title("Avg-Bode");grid off
-    subplot(2,2,4); heatmap(CorrNrand); clim([-1 1]); colorbar; title("Rand-Bode");grid off
+    subplot(2,2,4); heatmap(CorrBaseline); clim([-1 1]); colorbar; title("Baseline-Bode");grid off
     sgtitle(append(Pt," Bode-CCSR Comparison - Same S and R"));
     colormap("jet")
     cd ../
     mkdir("Bode-CCSR Freq Comparison")
     cd("Bode-CCSR Freq Comparison")
     save("CC_array","CC_array")
-    save("CorrNrand","CorrNrand")
+    save("CorrBaseline","CorrBaseline")
     save("CorrAvg","CorrAvg")
     save("CorrN1","CorrN1")
     save("CorrN2","CorrN2")
