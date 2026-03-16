@@ -130,6 +130,18 @@ for patients = 1:length(Dir)
             CCSR_curves.(S).(R).N2 = N2_vec;
             CCSR_curves.(S).(R).Avg = N_vec_avg;
             CCSR_curves.(S).(R).Baseline = N_vec_baseline;
+            [~, loc_n1] = findpeaks(N1_vec(freqlim));
+            freq_n1 = fvec(loc_n1);
+            ActualDomFreqs.N1{j,k} = freq_n1; 
+            [~, loc_n2] = findpeaks(N2_vec(freqlim));
+            freq_n2 = fvec(loc_n2);
+            ActualDomFreqs.N2{j,k} = freq_n2; 
+            [~, loc_avg] = findpeaks(N_vec_avg(freqlim));
+            freq_avg = fvec(loc_avg);
+            ActualDomFreqs.Avg{j,k} = freq_avg; 
+            [~, loc_baseline] = findpeaks(N_vec_baseline(freqlim));
+            freq_baseline = fvec(loc_baseline);
+            ActualDomFreqs.Baseline{j,k} = freq_baseline; 
             %Correlated Curves?
             cor1 = corrcoef(N1_vec(freqlim),bode_interp(freqlim)); cor1 = cor1(1,2); 
             cor2 = corrcoef(N2_vec(freqlim),bode_interp(freqlim)); cor2 = cor2(1,2);
@@ -157,6 +169,7 @@ for patients = 1:length(Dir)
     save("CorrN1","CorrN1")
     save("CorrN2","CorrN2")
     save("CCSR_curves", "CCSR_curves")
+    save("ActualDomFreqs","ActualDomFreqs",'-v7.3');
     cd ../
     disp(append("Done with ",Pt));
     clearvars -except Dir patients not_pts fvec freqlim
