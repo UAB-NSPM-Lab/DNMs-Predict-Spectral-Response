@@ -104,7 +104,7 @@ for patients = 1:length(Dir)
             end      
         end
     end
-    meanRandCorrBaseline = nanmean(RandCorrNrand,3);
+    meanRandCorrBaseline = nanmean(RandCorrBaseline,3);
     z_idx = find(meanRandCorrBaseline==0); meanRandCorrBaseline(z_idx) = nan;
     meanRandCorrN1 = nanmean(RandCorrN1,3);
     z_idx = find(meanRandCorrN1==0); meanRandCorrN1(z_idx) = nan;
@@ -112,15 +112,6 @@ for patients = 1:length(Dir)
     z_idx = find(meanRandCorrN2==0); meanRandCorrN2(z_idx) = nan;
     meanRandCorrAvg = nanmean(RandCorrAvg,3);
     z_idx = find(meanRandCorrAvg==0); meanRandCorrAvg(z_idx) = nan;
-    meanFreqMatchRBN1 = nanmean(freqmatch_BN1,3);
-    z_idx = find(meanFreqMatchRBN1==0); meanFreqMatchRBN1(z_idx) = nan;
-    meanFreqMatchRBN2 = nanmean(freqmatch_BN2,3);
-    z_idx = find(meanFreqMatchRBN2==0); meanFreqMatchRBN2(z_idx) = nan;
-    meanFreqMatchRBavg = nanmean(freqmatch_Bavg,3);
-    z_idx = find(meanFreqMatchRBavg==0); meanFreqMatchRBavg(z_idx) = nan;
-    meanFreqMatchRBbaseline = nanmean(freqmatch_Brand,3);
-    z_idx = find(meanFreqMatchRBbaseline==0); meanFreqMatchRBbaseline(z_idx) = nan;
-    nancount = sum((isnan(meanFreqMatchRBN1)),"all");
     figure; 
     subplot(1,3,1); heatmap(meanRandCorrN1); clim([-1 1]); colorbar; title("N1-Bode");grid off
     subplot(1,3,2); heatmap(meanRandCorrN2); clim([-1 1]); colorbar; title("N2-Bode");grid off
