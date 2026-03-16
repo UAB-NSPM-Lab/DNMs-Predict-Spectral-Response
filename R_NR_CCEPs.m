@@ -1,11 +1,31 @@
 %% Responsive vs non-responsive CCEP identifier
 clearvars 
-cd /data/project/NSPMlab/hbriny99/UAB_CCEPdata/CCSR_Resonance_Comparison
-load("PercentFreqMatchAllRand.mat");
-pt_list = string(fieldnames(PercentFreqMatchAllRand));
+cd /data/project/NSPMlab/hbriny99/UAB_CCEPdata/Output
+keyword = 'P';
+addpath(genpath('/data/project/NSPMlab/hbriny99/UAB_CCEPdata/Output'));
+fstruct = dir(append('*',keyword,'*'));
+z = 0;
+for i = 1:length(fstruct)
+    if fstruct(i).isdir == 1
+        cd(fstruct(i).name)
+        keyword2 = 'TFMsBode_figures';
+        fstruct2 = dir(append('*',keyword2,'*'));
+        if ~isempty(fstruct2)
+            z = z+1;
+            Dir(z).names = cellstr(fstruct(i).name);
+            cd ../
+        else
+            cd ../
+            continue
+        end
+    else
+        continue;
+    end
+end
 thresh = 100;
-for k = 1:length(pt_list)
-    pt = pt_list(k);
+%Loop through all patients and calculate Bode-CCSR correlation and Bode-Rand CCSR correlation
+for patients = 1:length(Dir) 
+    pt = string(Dir(patients).names);
     cd(append('/data/project/NSPMlab/hbriny99/UAB_CCEPdata/Output/',pt));
     load(append(pt,'_short.mat'));
     load("ArtifactualChannels.mat")
