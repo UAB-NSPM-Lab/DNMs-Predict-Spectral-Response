@@ -45,28 +45,10 @@ for patients = 1:length(Dir)
     load("CorrAvg.mat");
     load("CorrN1.mat");
     load("CorrN2.mat");
-    load("CorrNrand.mat");
-    load("freqmatch_Bavg.mat");
-    load("freqmatch_BN1.mat");
-    load("freqmatch_BN2.mat");
-    load("freqmatch_Brand.mat");
-    load("PercentFreqMatch.mat");
     RandCorrN1 = nan(size(CC_array,1),size(CC_array,2),100);
     RandCorrN2 = nan(size(CC_array,1),size(CC_array,2),100);
     RandCorrAvg = nan(size(CC_array,1),size(CC_array,2),100);
-    RandCorrNrand = nan(size(CC_array,1),size(CC_array,2),100);
-    meanRandCorrN1 = nan(size(CC_array,1),size(CC_array,2));
-    meanRandCorrN2 = nan(size(CC_array,1),size(CC_array,2));
-    meanRandCorrAvg = nan(size(CC_array,1),size(CC_array,2));
-    meanRandCorrNrand = nan(size(CC_array,1),size(CC_array,2));
-    freqmatch_BN1 = nan(size(CC_array,1),size(CC_array,2));
-    freqmatch_BN2 = nan(size(CC_array,1),size(CC_array,2));
-    freqmatch_Bavg = nan(size(CC_array,1),size(CC_array,2));
-    freqmatch_Brand = nan(size(CC_array,1),size(CC_array,2));
-    meanFreqMatchRBN1 = nan(size(CC_array,1),size(CC_array,2));
-    meanFreqMatchRBN2 = nan(size(CC_array,1),size(CC_array,2));
-    meanFreqMatchRBavg = nan(size(CC_array,1),size(CC_array,2));
-    meanFreqMatchRBrand = nan(size(CC_array,1),size(CC_array,2));
+    RandCorrBaseline = nan(size(CC_array,1),size(CC_array,2),100);
     %FM curves
     fs = base.fs;
     stims = string(fieldnames(CCSR_curves));
@@ -98,7 +80,7 @@ for patients = 1:length(Dir)
             ccsr_N1 = CCSR_curves.(S).(R).N1;
             ccsr_N2 = CCSR_curves.(S).(R).N2;
             ccsr_Avg = CCSR_curves.(S).(R).Avg;
-            ccsr_Rand = CCSR_curves.(S).(R).Rand;
+            ccsr_baseline = CCSR_curves.(S).(R).Baseline;
             for kk = 1:length(Rand.Bode)
                 bode = Rand.Bode{kk,1};
                 bode_freqs = Rand.Freq{kk,1};
@@ -113,16 +95,16 @@ for patients = 1:length(Dir)
                 cor1 = corrcoef(ccsr_N1(freqlim),bode_interp(freqlim)); cor1 = cor1(1,2); 
                 cor2 = corrcoef(ccsr_N2(freqlim),bode_interp(freqlim)); cor2 = cor2(1,2);
                 coravg = corrcoef(ccsr_Avg(freqlim),bode_interp(freqlim)); coravg = coravg(1,2); 
-                corrand = corrcoef(ccsr_Rand(freqlim),bode_interp(freqlim)); corrand = corrand(1,2);
+                corbaseline = corrcoef(ccsr_baseline(freqlim),bode_interp(freqlim)); corbaseline = corbaseline(1,2);
                 RandCorrN1(j,k,kk) = cor1;
                 RandCorrN2(j,k,kk) = cor2;
                 RandCorrAvg(j,k,kk) = coravg;
-                RandCorrNrand(j,k,kk) = corrand;
+                RandCorrBaseline(j,k,kk) = corbaseline;
             end      
         end
     end
-    meanRandCorrNrand = nanmean(RandCorrNrand,3);
-    z_idx = find(meanRandCorrNrand==0); meanRandCorrNrand(z_idx) = nan;
+    meanRandCorrBaseline = nanmean(RandCorrNrand,3);
+    z_idx = find(meanRandCorrBaseline==0); meanRandCorrBaseline(z_idx) = nan;
     meanRandCorrN1 = nanmean(RandCorrN1,3);
     z_idx = find(meanRandCorrN1==0); meanRandCorrN1(z_idx) = nan;
     meanRandCorrN2 = nanmean(RandCorrN2,3);
@@ -135,8 +117,8 @@ for patients = 1:length(Dir)
     z_idx = find(meanFreqMatchRBN2==0); meanFreqMatchRBN2(z_idx) = nan;
     meanFreqMatchRBavg = nanmean(freqmatch_Bavg,3);
     z_idx = find(meanFreqMatchRBavg==0); meanFreqMatchRBavg(z_idx) = nan;
-    meanFreqMatchRBrand = nanmean(freqmatch_Brand,3);
-    z_idx = find(meanFreqMatchRBrand==0); meanFreqMatchRBrand(z_idx) = nan;
+    meanFreqMatchRBbaseline = nanmean(freqmatch_Brand,3);
+    z_idx = find(meanFreqMatchRBbaseline==0); meanFreqMatchRBbaseline(z_idx) = nan;
     nancount = sum((isnan(meanFreqMatchRBN1)),"all");
     figure; 
     subplot(1,3,1); heatmap(meanRandCorrN1); clim([-1 1]); colorbar; title("N1-Bode");grid off
@@ -145,11 +127,11 @@ for patients = 1:length(Dir)
     sgtitle(append(Pt," Bode-CCSR Comparison - Rand S and R - Average"));
     colormap("jet")
     cd(append('/data/project/NSPMlab/hbriny99/UAB_CCEPdata/Output/',Pt,'/TFMsBode_figures/Bode-CCSR Freq Comparison'));
-    save("meanRandCorrNrand","meanRandCorrNrand");
+    save("meanRandCorrBaseline","meanRandCorrBaseline");
     save("meanRandCorrAvg","meanRandCorrAvg");
     save("meanRandCorrN1","meanRandCorrN1");
     save("meanRandCorrN2","meanRandCorrN2");
-    save("RandCorrNrand","RandCorrNrand",'-v7.3');
+    save("RandCorrBaseline","RandCorrBaseline",'-v7.3');
     save("RandCorrAvg","RandCorrAvg",'-v7.3');
     save("RandCorrN1","RandCorrN1",'-v7.3');
     save("RandCorrN2","RandCorrN2",'-v7.3');
